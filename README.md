@@ -7,10 +7,6 @@ ESTE TUTORIAL É VOLTADO PARA O IONIC VERSAO 3
 
 Criando projeto ionic3 = ionic start {NOME_DO_PROJETO} blank --type=ionic-angular
 
-
-1. Entities have to be marked with the table name (eg `@Entity('table_name')`)
-
-
 1. instale o plugin
 ```bash
 ionic cordova plugin add cordova-sqlite-storage --save
