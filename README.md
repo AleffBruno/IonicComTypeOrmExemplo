@@ -24,7 +24,42 @@ npm install @types/node --save-dev
 
 4. adicione  `"typeRoots": ["node_modules/@types"]` em `tsconfig.json` na chave `"compilerOptions"`
 
-5. crie `webpack.config.js`, de preferencia dentro da uma pasta config no root do projeto
+5. crie `webpack.config.js`, de preferencia dentro da uma pasta "config" no root do projeto
+>>>Adiciona o conteudo abaixo dentro de `webpack.config.js`
+```bash
+var webpack = require('webpack');
+var ionicWebpackFactory = require(process.env.IONIC_WEBPACK_FACTORY);
+
+var ModuleConcatPlugin = require('webpack/lib/optimize/ModuleConcatenationPlugin');
+var PurifyPlugin = require('@angular-devkit/build-optimizer').PurifyPlugin;
+
+var useDefaultConfig = require('@ionic/app-scripts/config/webpack.config.js');
+
+useDefaultConfig.dev.plugins = [
+  ionicWebpackFactory.getIonicEnvironmentPlugin(),
+  ionicWebpackFactory.getCommonChunksPlugin(),
+  new webpack.NormalModuleReplacementPlugin(/typeorm$/, function (result) {
+    result.request = result.request.replace(/typeorm/, "typeorm/browser");
+  }),
+  new webpack.ProvidePlugin({
+    'window.SQL': 'sql.js/js/sql.js'
+  })
+]
+
+useDefaultConfig.prod.plugins = [
+  ionicWebpackFactory.getIonicEnvironmentPlugin(),
+  ionicWebpackFactory.getCommonChunksPlugin(),
+  new ModuleConcatPlugin(),
+  new PurifyPlugin(),
+  new webpack.NormalModuleReplacementPlugin(/typeorm$/, function (result) {
+    result.request = result.request.replace(/typeorm/, "typeorm/browser");
+  })
+]
+
+module.exports = function () {
+  return useDefaultConfig;
+};
+```
 
 6. adicione a chave `"config"` no `package.json` apontando para o `webpack.config.js` criado acima
 ```bash
@@ -39,6 +74,7 @@ TypeORM implementado no projeto !
 Crie uma pasta dentro de src chamada entities, dentro coloque as entidades
 Exemplo: src/entities/category.ts
 
+```bash
 import {Entity, PrimaryGeneratedColumn, Column} from "typeorm";
 
 @Entity('category')
@@ -51,15 +87,12 @@ export class Category {
     name: string;
 
 }
+```
 
-Dentro de app.component.ts, importe "createConnection" do typeorm e as entidades...
-Exemplo: 
-import { createConnection } from 'typeorm'
-import { Category } from '../entities/category';
-
-Dentro do constructor crie a conexão...
+Faça a conexao dentro de `src/app/app.component.ts`
 Exemplo:
 *src/app/app.component.ts
+```bash
 import { Component } from '@angular/core';
 import { Platform } from 'ionic-angular';
 import { StatusBar } from '@ionic-native/status-bar';
@@ -117,12 +150,14 @@ export class MyApp {
         });
       }
 
+      splashScreen.hide();
       this.rootPage = HomePage;
     });
   }
 }
+```
 
-ATENTE-SE PARA "rootPage: any;" sem nenhuma "view" associada ao inicio da classe(app.component.ts), isso serve para primeiramente ser feito a conexao com o banco para somente depois a view ser iniciada
+ATENTE-SE PARA `rootPage:any = null;` sem nenhuma "view" associada ao inicio da classe(app.component.ts), isso serve para primeiramente ser feito a conexao com o banco para somente depois a view ser iniciada
 
 7 instale ' "sql.js": "^0.5.0" ' no package.json em devDependencies...
 Exemplo:
@@ -138,6 +173,25 @@ Exemplo:
 obs : nunca testei este projeto em um dispositivo movel
 
 FIM !!
+
+### Atenção !!
+Em ambiente de PRODUÇÃO é recomendado usar a chave `synchronize` como `false`, veja o exemplo de conexao abaixo:
+```bash
+await createConnection({
+          type: 'cordova',
+          database: 'mylistdatabase',
+          location: 'default',
+          logging: ['error', 'query', 'schema'],
+          synchronize: false,
+          entities: [
+            Category
+          ]
+          migrations: [
+            SUA_MIGRATION_AQUI,
+            SUA_MIGRATION_AQUI2,
+          ],
+          migrationsRun: true
+```
 
 ERROS_BUGANTES....
 {
@@ -159,6 +213,14 @@ Exemplo:
  
 delete a node_modules e package-lock.json, feche o projeto se ele estiver aberto em algum editor de codigo, abra o terminal e use
 npm install no projeto novamente
+
+ERROS_BUGANTES 2....
+Se der algum erro estranho, "use versoes fixas" no `package.json`
+Atenção nas versões do typeorm | typescript | @ionic/app-scripts
+exemplo:
+`"typeorm": "0.2.17"`
+`"@ionic/app-scripts": "3.2.1"`
+`"typescript": "3.4.5",`
 
 
 INFORMAÇÕES EXTRAS
