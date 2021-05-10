@@ -218,7 +218,7 @@ ERROS_BUGANTES 2....
 Se der algum erro estranho, "use versoes fixas" no `package.json`
 Atenção nas versões do typeorm | typescript | @ionic/app-scripts
 exemplo:
-`"typeorm": "0.2.17"`
+`"typeorm": "0.2.17"` OU `"typeorm": "0.2.31"`
 `"@ionic/app-scripts": "3.2.1"`
 `"typescript": "3.4.5",`
 
